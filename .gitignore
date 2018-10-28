@@ -1,0 +1,6 @@
+# IDEA Ignores #
+################
+.idea/
+
+# Virtual environment
+venv/*
