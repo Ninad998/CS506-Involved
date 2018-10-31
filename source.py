@@ -30,11 +30,35 @@ since = since.strftime('%Y-%m-%d')
 
 # Scrapping and storing tweets of each representative
 for index, details in sample_df.iterrows():
-	query =details['Data Point']
-	print("Query is:", query)
+	print("For the User: ", details['Data Point'])
+	data_point  = details['Data Point']
+
+	# based upon search query on twitter handle
+	query = data_point
 	result_obj = tweepy.Cursor(api.search,q=query,since=since,until=until,geocode=geocode)
 	for tweet in result_obj.items():	
 		db[details['Name']].insert_one(tweet._json)
+
+	# based upon search query on Name
+	query = details['Name']
+	result_obj = tweepy.Cursor(api.search,q=query,since=since,until=until,geocode=geocode)
+	for tweet in result_obj.items():	
+		db[details['Name']].insert_one(tweet._json)
+
+	# based upon users timeline (limit 3200 tweets)
+	alltweets = []
+	new_tweets = api.user_timeline(screen_name=data_point.replace('@',''),count=200)
+	alltweets.extend(new_tweets)
+	oldest = alltweets[-1].id - 1
+	for tweet in new_tweets:
+		db[details['Name']].insert_one(tweet._json)
+	while len(new_tweets) > 0:
+		new_tweets = api.user_timeline(screen_name = data_point.replace('@',''),count=200,max_id=oldest)
+		for tweet in new_tweets:
+			db[details['Name']].insert_one(tweet._json)
+		alltweets.extend(new_tweets)
+		oldest = alltweets[-1].id - 1
+
 	print("Mongo insertion complete!")
 print('Scrapping Job completed')
 	
