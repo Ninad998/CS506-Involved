@@ -17,7 +17,6 @@ auth = tweepy.OAuthHandler(keys['consumer_key'], keys['consumer_secret'])
 auth.set_access_token(keys['access_token'], keys['access_token_secret'])
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
-
 # Twitter Search API Parameters
 lang = 'en'
 geocode = '42.35712,-71.06946,200mi'  # Geocode of MA
@@ -60,7 +59,7 @@ for index, details in sample_df.iterrows():
         alltweets.extend(new_tweets)
         oldest = alltweets[-1].id - 1
 
-    results = db[details['Data Point']].find({},no_cursor_timeout=True)
+    results = db[details['Data Point']].find({}, no_cursor_timeout=True)
     for res in results:
         x = res['in_reply_to_status_id']
         while x is not None:
