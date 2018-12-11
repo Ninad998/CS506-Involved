@@ -1,5 +1,4 @@
 import os
-import random
 import operator
 import pandas as pd
 from nltk import word_tokenize
@@ -20,16 +19,27 @@ def consider_acronyms(weighted_words):
     acr = acr.dropna()
     for w in acr['Acronym'].str.lower():
         if w in weighted_words.keys():
-            weighted_words[w] = max(weighted_words.values()) - random.uniform(1, 5)
             weighted_words[acr.loc[acr['Acronym'] == w.upper(), 'Definition'].iloc[0]] = weighted_words[w]
             del weighted_words[w]
     return weighted_words
 
 
+def create_word_cloud(freq: dict, filename: str):
+    wc = WordCloud(
+        background_color="white",
+        max_words=2000,
+        width=1024,
+        height=720,
+        stopwords=stop_words
+    )
+
+    wc.generate_from_frequencies(freq)
+    wc.to_file("word_clouds//" + str(filename.split('_')[0]) + ".png")
+
+
 def tokenize(text):
     words = word_tokenize(text)
     words = [w.lower() for w in words]
-    words = [w for w in words if w not in custom_stop_words]
     words = [w for w in words if w not in stop_words and not w.isdigit()]
 
     # Stemming
@@ -44,6 +54,10 @@ def tokenize(text):
 
 
 def analyse():
+    """
+    Method applies TF-IDF word weight analyses.
+    :return: freq(Dict): Words with their weights
+    """
     for filename in os.listdir('preprocessed_data'):
         try:
             print("Working on: ", filename)
@@ -69,23 +83,18 @@ def analyse():
                             freq[word] = pair[1]
 
             freq = consider_acronyms(freq)
+            for w in custom_stop_words:
+                if w in freq:
+                    del freq[w]
             sorted_x = sorted(freq.items(), key=operator.itemgetter(1), reverse=True)
             freq_df = pd.DataFrame(sorted_x, columns=['words', 'weights'])
             freq_df.to_csv('weights//' + str(filename.split('_')[0]) + '.csv', index=False)
 
-            wc = WordCloud(
-                background_color="white",
-                max_words=2000,
-                width=1024,
-                height=720,
-                stopwords=stop_words
-            )
-
-            wc.generate_from_frequencies(freq)
-            wc.to_file("word_clouds//" + str(filename.split('_')[0]) + ".png")
         except Exception as e:
             print("Broken File", filename)
             print(e)
+
+        create_word_cloud(freq, filename)
 
 
 if __name__ == "__main__":
