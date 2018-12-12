@@ -20,7 +20,7 @@ def refine(tweet_texts: list, details):
     name.append(handle)
     for i in range(len(tweet_texts)):
         if tweet_texts[i]:
-            not_required = ['"', '"', "'", '.', '&', ',', '‘', '’', '”', '“', '#']
+            not_required = ['"', '"', "'", '.', '&', ',', '‘', '’', '”', '“']
             for nr in not_required:
                 tweet_texts[i] = tweet_texts[i].replace(nr, '')
 
